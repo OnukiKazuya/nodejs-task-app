@@ -1,5 +1,6 @@
 const express = require("express");
 const router = new express.Router();
+const multer = require("multer");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
 
@@ -74,7 +75,51 @@ router.patch("/users/me", auth, async (req, res) => {
 
 router.delete("/users/me", auth, async (req, res) => {
   try {
-    await req.user.remove();  // ここで、ミドルウェアが発生する(pre hook event);
+    await req.user.remove(); // ここで、ミドルウェアが発生する(pre hook event);
+    res.status(200).send(req.user);
+  } catch (e) {
+    res.status(500).send(e);
+  }
+});
+
+const upload = multer({
+  // dest: "avatars",  // ローカルに保存したいとき
+  limits: {
+    fileSize: 1000000,
+  },
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      // / {この中に、正規表現をいれる}/
+      return cb(new Error("Please upload a Image(jpg, jpeg, png)"));
+    } else {
+      cb(undefined, true);
+    }
+  },
+});
+
+// limit 1MB, jpg,jpeg,png ,
+router.post(
+  "/users/me/avatar",
+  auth,
+  upload.single("avatar"),
+  async (req, res) => {
+    //　前の処理が成功したときに呼ばれるもの
+    req.user.avatar = req.file.buffer;
+    await req.user.save();
+    res.status(200).send(req.user);
+  },
+  (err, req, res, next) => {
+    // 前でエラーが起こったときに呼ばれるもの(4つしっかりと引数を指定するのがポイントらしい)
+    return res.status(400).send({ error: err.message });
+  }
+);
+
+router.delete("/users/me/avatar", auth, async (req, res) => {
+  try {
+    if (req.user.avatar) {
+      req.user.avatar = undefined;
+    }
+    await req.user.save();
     res.status(200).send(req.user);
   } catch (e) {
     res.status(500).send(e);
