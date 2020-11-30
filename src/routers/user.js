@@ -27,15 +27,26 @@ router.post("/users/login", async (req, res) => {
   }
 });
 
-// router.get("/users", auth, async (req, res) => {
-//   // /users -> auth(middleware) -> route handler
-//   try {
-//     const users = await User.find({});
-//     res.status(200).send(users);
-//   } catch (e) {
-//     res.status(500).send(e);
-//   }
-// });
+router.post("/users/logout", auth, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter((val) => val.token !== req.token);
+    await req.user.save(); // userが自動的に置き換わる設定
+    res.status(200).send(req.user);
+  } catch (e) {
+    res.status(500).sen(e);
+  }
+});
+
+router.post("/users/logoutAll", auth, async (req, res) => {
+  try {
+    req.user.tokens = [];
+    await req.user.save();
+    res.status(200).send(req.user);
+  } catch (e) {
+    res.status(500).send(e);
+  }
+});
+
 router.get("/users/me", auth, async (req, res) => {
   // /users -> auth(middleware) -> route handler
   res.status(200).send(req.user);
