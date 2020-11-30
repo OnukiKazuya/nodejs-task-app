@@ -52,19 +52,7 @@ router.get("/users/me", auth, async (req, res) => {
   res.status(200).send(req.user);
 });
 
-router.get("/users/:id", async (req, res) => {
-  try {
-    const user_id = req.params.id;
-    const user = await User.findById(user_id);
-    if (!user) {
-      return res.status(404).send();
-    }
-    res.status(200).send(user);
-  } catch (e) {
-    res.status(500).send(e);
-  }
-});
-router.patch("/users/:id", async (req, res) => {
+router.patch("/users/me", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["name", "email", "password", "age"];
   const isValidOperation = updates.every((updateKey) =>
@@ -74,29 +62,20 @@ router.patch("/users/:id", async (req, res) => {
     return res.status(400).send({ error: "Invalid Updates" });
   }
   try {
-    const id = req.params.id;
-    const user = await User.findById(id);
     updates.forEach((updateKey) => {
-      user[updateKey] = req.body[updateKey];
+      req.user[updateKey] = req.body[updateKey];
     });
-    const userUpdated = await user.save();
-    if (!userUpdated) {
-      res.status(404).send();
-    }
-    res.status(200).send(userUpdated);
+    await req.user.save();
+    res.status(200).send(req.user);
   } catch (e) {
     res.status(400).send(e);
   }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/me", auth, async (req, res) => {
   try {
-    const _id = req.params.id;
-    const user = await User.findByIdAndDelete(_id);
-    if (!user) {
-      res.status(404).send();
-    }
-    res.status(200).send(user);
+    await req.user.remove();  // ここで、ミドルウェアが発生する(pre hook event);
+    res.status(200).send(req.user);
   } catch (e) {
     res.status(500).send(e);
   }
