@@ -79,7 +79,7 @@ userSchema.methods.toJSON = function () {
 // methods : personal,   statics : common!!
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id }, "test", { expiresIn: "7 days" });
+  const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "7 days" });
   if (!token) {
     throw new Error("Unable to get AuthToken");
   }

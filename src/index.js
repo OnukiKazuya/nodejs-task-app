@@ -1,7 +1,7 @@
 const express = require("express");
 require("./db/mongoose");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;  // 環境変数 PORT 
 const User_Router = require("./routers/user");
 const Task_Router = require("./routers/task");
 const jwt = require("jsonwebtoken");

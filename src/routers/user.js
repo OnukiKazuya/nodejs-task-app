@@ -3,11 +3,13 @@ const router = new express.Router();
 const multer = require("multer");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
+const {sendWelcomeMail, sendGoodbyeMail} = require("../emails/account")
 
 router.post("/users", async (req, res) => {
   const me = User(req.body);
   try {
     await me.save();
+    sendWelcomeMail(me.email, me.name)
     const token = await me.generateAuthToken();
     res.status(201).send({ me, token });
   } catch (e) {
@@ -76,11 +78,14 @@ router.patch("/users/me", auth, async (req, res) => {
 router.delete("/users/me", auth, async (req, res) => {
   try {
     await req.user.remove(); // ここで、ミドルウェアが発生する(pre hook event);
+    console.log(req.user.email, req.user.name)
+    sendGoodbyeMail(req.user.email, req.user.name)
     res.status(200).send(req.user);
   } catch (e) {
     res.status(500).send(e);
   }
 });
+
 
 const upload = multer({
   // dest: "avatars",  // ローカルに保存したいとき
