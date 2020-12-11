@@ -3,7 +3,7 @@ const router = new express.Router();
 const multer = require("multer");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
-const {sendWelcomeMail, sendGoodbyeMail} = require("../emails/account")
+const {sendWelcomeMail, sendGoodbyeMail} = require("../emails/account")  // ここがエラー
 
 router.post("/users", async (req, res) => {
   const me = User(req.body);
