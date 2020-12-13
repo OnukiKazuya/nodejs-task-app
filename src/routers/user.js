@@ -80,7 +80,7 @@ router.delete("/users/me", auth, async (req, res) => {
     await req.user.remove(); // ここで、ミドルウェアが発生する(pre hook event);
     console.log(req.user.email, req.user.name)
     sendGoodbyeMail(req.user.email, req.user.name)
-    res.status(200).send(req.user);
+    res.status(200).send();
   } catch (e) {
     res.status(500).send(e);
   }
